@@ -23,13 +23,6 @@
 #include "grbl.h"
 
 #ifdef STM32
-  #ifdef STM32F1
-		#define pUSART ((USART_TypeDef *) USART1_BASE)
-  #endif
-  #ifdef STM32F4
-		#define pUSART ((USART_TypeDef *) USART1_BASE)
-  #endif
-
   #define RX_RING_BUFFER (RX_BUFFER_SIZE)
   #define TX_RING_BUFFER (TX_BUFFER_SIZE)
 #elif ATMEGA328P

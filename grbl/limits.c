@@ -71,16 +71,18 @@ void limits_init()
 // Disables hard limits.
 void limits_disable()
 {
-
 #ifdef STM32F1
   NVIC_DisableIRQ(EXTI15_10_IRQn);
 #endif
 
-#ifdef STM32F4
+#ifdef STM32F46
   NVIC_DisableIRQ(EXTI15_10_IRQn);
-//  HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
 #endif
 
+#ifdef STM32F411
+  NVIC_DisableIRQ(EXTI15_10_IRQn);
+  NVIC_DisableIRQ(EXTI9_5_IRQn);
+#endif
 
 #ifdef ATMEGA328P
   LIMIT_PCMSK &= ~LIMIT_MASK;  // Disable specific pins of the Pin Change Interrupt
@@ -88,13 +90,21 @@ void limits_disable()
 #endif
 }
 
-// Disables hard limits.
+// Enables hard limits.
 void limits_enable()
 {
+#ifdef STM32F1
+  NVIC_EnableIRQ(EXTI15_10_IRQn);
+#endif
 
-#ifdef STM32F4
+#ifdef STM32F46
   NVIC_EnableIRQ(EXTI15_10_IRQn);
   EnableLimitsINT();
+#endif
+
+#ifdef STM32F411
+  NVIC_EnableIRQ(EXTI15_10_IRQn);
+  NVIC_DisableIRQ(EXTI9_5_IRQn);
 #endif
 }
 
@@ -108,10 +118,13 @@ uint8_t limits_get_state()
 #ifdef STM32
   uint16_t pin = 0;
 	#ifdef STM32F1
-    pin = GPIO_ReadInputData(LIM_GPIO_Port);
+    	pin = GPIO_ReadInputData(LIM_GPIO_Port);
 	#endif
-	#ifdef STM32F4
+	#ifdef STM32F46
 		pin = GetLimitsState();
+	#endif
+	#ifdef STM32F411
+		pin = GPIO_ReadInputData(LIM_GPIO_Port);
 	#endif
 
 	#ifdef INVERT_LIMIT_PIN_MASK

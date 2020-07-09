@@ -79,18 +79,18 @@ uint8_t coolant_get_state()
 void coolant_stop()
 {
 #ifdef STM32
-	#ifdef INVERT_COOLANT_FLOOD_PIN
-		GPIO_SetBits(COOL_FLOOD_GPIO_Port,COOL_FLOOD_Pin);
-	#else
-		GPIO_ResetBits(COOL_FLOOD_GPIO_Port,COOL_FLOOD_Pin);
-#endif
-#ifdef ENABLE_M7
-  #ifdef INVERT_COOLANT_MIST_PIN
-    GPIO_SetBits(COOL_MIST_GPIO_Port, COOL_MIST_Pin);
+  #ifdef INVERT_COOLANT_FLOOD_PIN
+    GPIO_SetBits(COOL_FLOOD_GPIO_Port,COOL_FLOOD_Pin);
   #else
-    GPIO_ResetBits(COOL_MIST_GPIO_Port, COOL_MIST_Pin);
+    GPIO_ResetBits(COOL_FLOOD_GPIO_Port,COOL_FLOOD_Pin);
   #endif
-#endif //-- ENABLE_M7
+  #ifdef ENABLE_M7
+    #ifdef INVERT_COOLANT_MIST_PIN
+      GPIO_SetBits(COOL_MIST_GPIO_Port, COOL_MIST_Pin);
+    #else
+      GPIO_ResetBits(COOL_MIST_GPIO_Port, COOL_MIST_Pin);
+    #endif
+  #endif //-- ENABLE_M7
 
 
 #elif ATMEGA328P

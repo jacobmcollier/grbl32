@@ -183,7 +183,6 @@
 	void Analog_Timer_Init();	//-- does nothing in STM32F1
 #endif
 
-
 #ifdef STM32F46
 
 	//-- Step Dir  ---------------------------------------------------------
@@ -246,7 +245,7 @@
 
 	//-- Spindle/Laser PWM -------------------------------------------------------
 	/* For maximum resolution (Counter_Period), we will use the full timer clock, Pre_Scaler(PSC) will be 0.
-	 * For the STM32F4, the timer clock will be 168MHz for TIM1,8,9,10,11 and 84MHz for TIM2,3,4,5,6,7,12,13,14
+	 * For the STM32F46, the timer clock will be 168MHz for TIM1,8,9,10,11 and 84MHz for TIM2,3,4,5,6,7,12,13,14
 	 * using PWM_FREQUENCY = Timer_Clock / (Pre_Scaler+1) * (Counter_Period+1)
 	 * for TIM2;   	PWM_FREQUENCY = 84000000 / (PSC+1) * (ARR+1)
 	 * for GRBL, a PWM_FREQUENCY of 10KHz is desirable for a Laser Engraver
@@ -347,7 +346,91 @@
 
 #endif
 
+#ifdef STM32F411
+  //-- Step Dir Limit ---------------------------------------------------------
+  #define LIM_GPIO_Port GPIOB
+  #define DIR_GPIO_Port GPIOA
+  #define STEP_GPIO_Port GPIOB
+  #define AUX_GPIO_Port GPIOB
+  #define AUX_MASK      () // All aux pins
 
+	#ifdef STM32F4_3
+		#define LIM_MASK        (LIM_X_Pin | LIM_Y_Pin | LIM_Z_Pin) // All limit pins
+		#define DIR_MASK        (DIR_X_Pin | DIR_Y_Pin | DIR_Z_Pin) // All direction pins
+		#define STEP_MASK       (STEP_X_Pin | STEP_Y_Pin | STEP_Z_Pin) // All step pins
+	#endif
+  #ifdef STM32F4_4
+    #define LIM_MASK        (LIM_X_Pin | LIM_Y_Pin | LIM_Z_Pin | LIM_A_Pin) // All limit pins
+    #define DIR_MASK        (DIR_X_Pin | DIR_Y_Pin | DIR_Z_Pin | DIR_A_Pin) // All direction pins
+    #define STEP_MASK       (STEP_X_Pin | STEP_Y_Pin | STEP_Z_Pin | STEP_A_Pin) // All step pins
+  #endif
+  #ifdef STM32F4_5
+    #define LIM_MASK        (LIM_X_Pin | LIM_Y_Pin | LIM_Z_Pin | LIM_A_Pin | LIM_B_Pin) // All limit pins
+    #define DIR_MASK        (DIR_X_Pin | DIR_Y_Pin | DIR_Z_Pin | DIR_A_Pin | DIR_B_Pin) // All direction pins
+    #define STEP_MASK       (STEP_X_Pin | STEP_Y_Pin | STEP_Z_Pin | STEP_A_Pin | STEP_B_Pin) // All step pins
+  #endif
+  #ifdef STM32F4_6
+    #define LIM_MASK        (LIM_X_Pin | LIM_Y_Pin | LIM_Z_Pin | LIM_A_Pin | LIM_B_Pin | LIM_C_Pin ) // All limit pins
+    #define DIR_MASK        (DIR_X_Pin | DIR_Y_Pin | DIR_Z_Pin | DIR_A_Pin | DIR_B_Pin | DIR_C_Pin ) // All direction pins
+    #define STEP_MASK       (STEP_X_Pin | STEP_Y_Pin | STEP_Z_Pin | STEP_A_Pin | STEP_B_Pin | STEP_C_Pin ) // All step pins
+  #endif
+
+
+	/*
+	#define SetStepperDisableBit() GPIO_SetBits(STEP_ENABLE_GPIO_Port,LL_GPIO_Pin_15)
+	#define ResetStepperDisableBit() GPIO_ResetBits(STEP_ENABLE_GPIO_Port,LL_GPIO_Pin_15)
+	*/
+	#define SetStepperDisableBit() GPIO_SetBits(STEP_ENABLE_GPIO_Port,STEP_ENABLE_Pin)
+	#define ResetStepperDisableBit() GPIO_ResetBits(STEP_ENABLE_GPIO_Port,STEP_ENABLE_Pin)
+
+	#define STEP_SET_TIMER 		TIM2				//-- Set Timer : Step pulse START - typically rising
+	#define STEP_SET_IRQ		TIM2_IRQn
+	#define STEP_RESET_TIMER	TIM3				//-- Reset Timer : Step pulse END - typically falling
+	#define STEP_RESET_IRQ		TIM3_IRQn
+
+	#define Step_Set_EnableIRQ() 			NVIC_EnableIRQ(STEP_SET_IRQ)
+	#define Step_Reset_EnableIRQ() 			NVIC_EnableIRQ(STEP_RESET_IRQ)
+	#define Step_Set_DisableIRQ() 			NVIC_DisableIRQ(STEP_SET_IRQ)
+	#define Step_Reset_DisableIRQ() 		NVIC_DisableIRQ(STEP_RESET_IRQ)
+
+	#define Step_Set_Enable()				{ LL_TIM_EnableIT_UPDATE(STEP_SET_TIMER); LL_TIM_EnableCounter(STEP_SET_TIMER); }
+	#define Step_Reset_Enable()				{ LL_TIM_EnableIT_UPDATE(STEP_RESET_TIMER); LL_TIM_EnableCounter(STEP_RESET_TIMER); }
+
+	#define CON_GPIO_Port GPIOA
+
+	#define OUTPUTS_PWM_FREQUENCY       10000
+	#define OUTPUTS_PWM_MAX_VALUE      (1000000 / OUTPUTS_PWM_FREQUENCY)
+
+	//-- Spindle/Laser PWM -------------------------------------------------------
+	/* For maximum resolution (Counter_Period), we will use the full timer clock, Pre_Scaler(PSC) will be 0.
+	 * For the STM32F1, the timer clock will be 72MHz
+	 * using PWM_FREQUENCY = Timer_Clock / (Pre_Scaler+1) * (Counter_Period+1)
+	 * for TIM2;   	PWM_FREQUENCY = 72000000 / (PSC+1) * (ARR+1)
+	 * for GRBL, a PWM_FREQUENCY of 10KHz is desirable for a Laser Engraver
+	 * then						10000 = 72000000 / (ARR+1)
+	 * makes						ARR = (84000000/10000) - 1
+	 * 									ARR = 7199
+	 * 													a little less than 13bit resolution (8192 steps to represent 0 to 5V)
+	 * 													for a 5000 RPM range spindle, the resolution is about 0.7 RPM
+	 */
+	#define SPINDLE_PWM_MAX_VALUE       7199
+	#define SPINDLE_PWM_MIN_VALUE   	1   // Must be greater than zero.
+	#define SPINDLE_PWM_OFF_VALUE     	0
+	#define SPINDLE_PWM_RANGE         	(SPINDLE_PWM_MAX_VALUE-SPINDLE_PWM_MIN_VALUE)
+	#define SetSpindleEnablebit()       GPIO_SetBits(SPIN_EN_GPIO_Port, SPIN_EN_Pin)
+	#define ResetSpindleEnablebit()     GPIO_ResetBits(SPIN_EN_GPIO_Port, SPIN_EN_Pin)
+	#define SetSpindleDirectionBit()    GPIO_SetBits(SPIN_DIR_GPIO_Port, SPIN_DIR_Pin)
+	#define ResetSpindleDirectionBit()  GPIO_ResetBits(SPIN_DIR_GPIO_Port, SPIN_DIR_Pin)
+
+	#define SPINDLE_TIMER 		TIM1
+	#define SPINDLE_CHANNEL		LL_TIM_CHANNEL_CH1
+	#define Spindle_Timer_Init()				{	LL_TIM_CC_EnableChannel(SPINDLE_TIMER,SPINDLE_CHANNEL); LL_TIM_DisableAllOutputs(SPINDLE_TIMER); LL_TIM_EnableCounter(SPINDLE_TIMER); } //-- start timer with PWM disabled
+
+	#define Set_Spindle_Speed(pwmVal)   LL_TIM_OC_SetCompareCH1(SPINDLE_TIMER,pwmVal)
+
+
+	void Analog_Timer_Init();	//-- does nothing in STM32F1
+#endif
 
 
 #endif /* STM32_Pin_OUT_H_ */

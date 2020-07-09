@@ -241,14 +241,7 @@ void st_wake_up()
     OCR0A = -(((settings.pulse_microseconds)*TICKS_PER_MICROSECOND) >> 3);
   #else // Normal operation
     #ifdef STM32
-			#ifdef STM32F1
-    		st.step_pulse_time = (settings.fpulse_microseconds)*uTICKS_PER_MICROSECOND;
-			#endif
-			#ifdef STM32F4
-   		st.step_pulse_time = (settings.fpulse_microseconds)*uTICKS_PER_MICROSECOND;
-			#endif
-
-
+    	st.step_pulse_time = (settings.fpulse_microseconds)*uTICKS_PER_MICROSECOND;
     #elif ATMEGA328P
       // Set step pulse time. Ad hoc computation from oscilloscope. Uses two's complement.
       st.step_pulse_time = -(((settings.pulse_microseconds-2)*TICKS_PER_MICROSECOND) >> 3);

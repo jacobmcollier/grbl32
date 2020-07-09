@@ -22,6 +22,9 @@
 #include "stm32utilities.h"
 #include <stdio.h>
 #include <string.h>
+#ifdef STM32F411
+# include "usbd_cdc_if.h"
+#endif
 
 //-- Steps and Directions Pin Arrays --------------
 #if ( defined(STM32F1_3) || defined(STM32F4_3) )
@@ -66,24 +69,44 @@ const PIN_MASK limit_pin_mask[N_AXIS] =
 const PIN_MASK limit_pin_mask[N_AXIS] =
 {	LIM_X_Pin, LIM_Y_Pin, LIM_Z_Pin, LIM_A_Pin, LIM_B_Pin, LIM_C_Pin};
 #endif
-/*
- * For the F46, Limits are on SPI expandedIO, not MCU pins, we'll organize the pins sequentially
- */
-#ifdef STM32F4_3
-const PIN_MASK limit_pin_mask[N_AXIS] =
-{	0x01, 0x02, 0x04};
+
+#ifdef STM32F46
+	// For the F46, Limits are on SPI expandedIO, not MCU pins, we'll organize the pins sequentially
+	#ifdef STM32F4_3
+	const PIN_MASK limit_pin_mask[N_AXIS] =
+	{	0x01, 0x02, 0x04};
+	#endif
+	#ifdef STM32F4_4
+	const PIN_MASK limit_pin_mask[N_AXIS] =
+	{	0x01, 0x02, 0x04, 0x08};
+	#endif
+	#ifdef STM32F4_5
+	const PIN_MASK limit_pin_mask[N_AXIS] =
+	{	0x01, 0x02, 0x04, 0x08, 0x10};
+	#endif
+	#ifdef STM32F4_6
+	const PIN_MASK limit_pin_mask[N_AXIS] =
+	{ 0x01, 0x02, 0x04, 0x08, 0x10, 0x20 };
+	#endif
 #endif
-#ifdef STM32F4_4
-const PIN_MASK limit_pin_mask[N_AXIS] =
-{	0x01, 0x02, 0x04, 0x08};
-#endif
-#ifdef STM32F4_5
-const PIN_MASK limit_pin_mask[N_AXIS] =
-{	0x01, 0x02, 0x04, 0x08, 0x10};
-#endif
-#ifdef STM32F4_6
-const PIN_MASK limit_pin_mask[N_AXIS] =
-{ 0x01, 0x02, 0x04, 0x08, 0x10, 0x20 };
+
+#ifdef STM32F411
+	#ifdef STM32F4_3
+	const PIN_MASK limit_pin_mask[N_AXIS] =
+	{	LIM_X_Pin, LIM_Y_Pin, LIM_Z_Pin};
+	#endif
+	#ifdef STM32F4_4
+	const PIN_MASK limit_pin_mask[N_AXIS] =
+	{	LIM_X_Pin, LIM_Y_Pin, LIM_Z_Pin, LIM_A_Pin};
+	#endif
+	#ifdef STM32F4_5
+	const PIN_MASK limit_pin_mask[N_AXIS] =
+	{	LIM_X_Pin, LIM_Y_Pin, LIM_Z_Pin, LIM_A_Pin, LIM_B_Pin};
+	#endif
+	#ifdef STM32F4_6
+	const PIN_MASK limit_pin_mask[N_AXIS] =
+	{	LIM_X_Pin, LIM_Y_Pin, LIM_Z_Pin, LIM_A_Pin, LIM_B_Pin, LIM_C_Pin};
+	#endif
 #endif
 
 #ifdef STM32F1
@@ -138,7 +161,15 @@ char *Int16ToBin(uint16_t ValIn, char *pStrOut)
 //------------------------------------------------------------------------
 void uart_init()
 {
+#ifdef STM32F1
 	LL_USART_EnableIT_RXNE(USART1);
+#endif
+#ifdef STM32F411
+	// Interrupt handled by USB CDC implementation
+#endif
+#ifdef STM32F46
+	LL_USART_EnableIT_RXNE(USART1);
+#endif
 
 	/*
 	 * Debug
@@ -158,9 +189,21 @@ void uart_sendstr(const char *pStr)
 
 void uart_sendch(uint8_t uC)
 {
+#ifdef STM32F1
 	LL_USART_TransmitData8(USART1, uC);
 	while (!(LL_USART_IsActiveFlag_TXE(USART1)))
 		; // sit till empty
+#endif
+#ifdef STM32F411
+	uint8_t result = USBD_BUSY;
+	while(result != USBD_OK)
+		result = CDC_Transmit_FS(&uC, 1);
+#endif
+#ifdef STM32F46
+	LL_USART_TransmitData8(USART1, uC);
+	while (!(LL_USART_IsActiveFlag_TXE(USART1)))
+		; // sit till empty
+#endif
 }
 
 
@@ -214,7 +257,6 @@ void GPIO_SetBits(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
 	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_SET);
 }
 //------------------------------------------------------------------------
-
 #ifdef STM32F46   //-- board specific hardware, SPI driven limits
 uint8_t SPIDataC0W[3]; // 		= { 0x40, 0x00, 0x00 };		//-- Chip0, Limits P & N
 uint8_t SPIDataC0R[3]; //		= { 0x41, 0x00, 0x00 };
@@ -472,12 +514,11 @@ uint8_t ReadInputByte()
 	return (val);
 }
 
-#endif //STM32F46
-
 void spi_limits_init()
 {
-#ifdef STM32F46 //-- board specific hardware, SPI driven limits
 	SPIInit(&hspi3);
-#endif
 }
+
+#endif //STM32F46
+
 

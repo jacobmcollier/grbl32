@@ -249,9 +249,23 @@ void mc_homing_cycle(uint8_t cycle_mask)
 
   // If hard limits feature enabled, re-enable hard limits pin change register after homing cycle.
 #ifdef STM32
+#ifdef STM32F1
   LL_EXTI_ClearFlag_0_31(LIM_MASK);
   HAL_NVIC_ClearPendingIRQ(EXTI15_10_IRQn);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+#endif
+#ifdef STM32F411
+  LL_EXTI_ClearFlag_0_31(LIM_MASK);
+  HAL_NVIC_ClearPendingIRQ(EXTI15_10_IRQn);
+  HAL_NVIC_ClearPendingIRQ(EXTI9_5_IRQn);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+#endif
+#ifdef STM32F46
+  LL_EXTI_ClearFlag_0_31(LIM_MASK);
+  HAL_NVIC_ClearPendingIRQ(EXTI15_10_IRQn);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+#endif
 
 #elif ATMEGA328P
   limits_init();
