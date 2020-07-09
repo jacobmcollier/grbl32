@@ -25,7 +25,7 @@
 ****************************************************************************/
 /*
  *	  Copyright (c) 2018-2019 Thomas Truong
- *	  										EEPROM Simulation using Flash on STM32F103 and STM32F407
+ *	  										EEPROM Simulation using Flash on STM32
  *
  *
  *

@@ -31,8 +31,9 @@
 #endif
 #ifdef STM32F4
 //	#include "stm32f4xx_hal.h"
+#endif
+#ifdef STM32F46
 	#include "spi.h"
-
 #endif
 
 #include "main.h"
@@ -87,7 +88,7 @@ void timing_init();
 //-- Port based calls
 #define GPIO_ReadInputData 		LL_GPIO_ReadInputPort
 #define GPIO_ReadOutputData		LL_GPIO_ReadOutputPort
-#define GPIO_Write 						LL_GPIO_WriteOutputPort
+#define GPIO_Write 				LL_GPIO_WriteOutputPort
 //-- Pin based calls, need to use HAL since LL pins and HAL pins are incompatible for F1
 void GPIO_ResetBits (GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin);
 void GPIO_SetBits	(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin);
@@ -102,8 +103,7 @@ void Debug_Print(char * pStr);
 
 
 
-
-#ifdef STM32F46   //-- board specific hardwares
+#ifdef STM32F46   // board specific hardware
 	enum IOExpChip {IOC0, IOC1};
 	enum IOActive {IOA_Lo, IOA_Hi};
 
@@ -148,19 +148,9 @@ void Debug_Print(char * pStr);
   void EnableLimitsINT();		//-- enable limits interrupt
   void DisableLimitsINT();	//-- disable
 
+  void spi_limits_init();
+
 #endif
-
-
-
-
-
-void spi_limits_init();
-
-
-
-
-
-
 
 
 

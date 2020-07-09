@@ -25,23 +25,21 @@
 
 #include "grbl.h"
 
-#ifdef STM32F1
-  #ifdef STM32F13
-  const PIN_MASK outputs_pin_mask[N_OUTPUTS_DIG] =
-    {
-    AUX_1_Pin,AUX_2_Pin,AUX_3_Pin,AUX_4_Pin,
-    };
-  #endif
-
-  #ifdef STM32F16
-  const PIN_MASK outputs_pin_mask[N_OUTPUTS_DIG] =
-    {
-    AUX_1_Pin,
-    };
-  #endif
+#ifdef STM32F13
+const PIN_MASK outputs_pin_mask[N_OUTPUTS_DIG] =
+{
+	AUX_1_Pin,AUX_2_Pin,AUX_3_Pin,AUX_4_Pin,
+};
 #endif
 
-#ifdef STM32F4
+#ifdef STM32F16
+const PIN_MASK outputs_pin_mask[N_OUTPUTS_DIG] =
+{
+	AUX_1_Pin,
+};
+#endif
+
+#ifdef STM32F46
 static float pwm_analog_gradient; // Precalulated value to speed up rpm to PWM conversions.
 const PIN_MASK outputs_pin_mask[N_OUTPUTS_DIG] =
   { AUX_1_Pin, AUX_2_Pin, AUX_3_Pin, AUX_4_Pin, AUX_5_Pin, AUX_6_Pin, AUX_7_Pin, AUX_8_Pin };
@@ -52,6 +50,11 @@ const uint32_t ana_outputs_channel[N_OUTPUTS_ANA] =
 const PIN_MASK inputs_pin_mask[N_INPUTS_DIG] =
   { EXPIO_1_Pin, EXPIO_2_Pin, EXPIO_3_Pin, EXPIO_4_Pin, EXPIO_5_Pin, EXPIO_6_Pin, EXPIO_7_Pin, EXPIO_8_Pin };
 
+#endif
+
+#ifdef STM32F411
+const PIN_MASK outputs_pin_mask[N_OUTPUTS_DIG] =
+{};
 #endif
 
 //------------------------------------------------------------------------
@@ -126,7 +129,7 @@ void outputs_digital_action(uint8_t bit_index, uint8_t Action)
 
 }
 
-#ifdef STM32F1
+#if ( defined (STM32F1) || defined(STM32F411) )
 void outputs_analog_init()
   {}
 void outputs_analog_set(uint16_t value)
@@ -144,7 +147,7 @@ void wait_on_input_action (uint8_t bit_index, uint8_t Mode,float *pTimeoutS)
 
 #endif //-- STM32F1
 
-#ifdef STM32F4
+#ifdef STM32F46
 //--------------------------------------------------------------------------
 /*
  * Sequence: Set PWM value, then Enable
@@ -268,4 +271,4 @@ void wait_on_input_action(uint8_t bit_index, uint8_t Mode, float *pTimeoutS)
     }
 
 }
-#endif //--STM32F4
+#endif //--STM32F46

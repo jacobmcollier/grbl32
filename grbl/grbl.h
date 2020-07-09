@@ -23,7 +23,7 @@
 #define grbl_h
 
 // Grbl versioning system
-#define GRBL_VERSION "1.1f:0.03mp"
+#define GRBL_VERSION "1.1f:0.03mp:0.01jc"
 //#define GRBL_VERSION_BUILD "20170801"
 #define GRBL_VERSION_BUILD "20200119"
 

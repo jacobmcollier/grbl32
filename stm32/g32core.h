@@ -45,14 +45,16 @@
     #define N_AXIS 6  // Number of axes
   #endif
 
-
-	#ifdef STM32F4
+	#ifdef STM32F46
 	  #define N_OUTPUTS_DIG 	8 // Number of digital outputs
 		#define N_INPUTS_DIG 		8 // Number of digital inputs
 		#define N_OUTPUTS_ANA 	8 // Number of analog outputs (PWM)
 	#endif
-
-	#ifdef STM32F1
+	#ifdef STM32F411
+	  #define N_OUTPUTS_DIG 	0 // Number of digital outputs
+		#define N_INPUTS_DIG 	0 // Number of digital inputs
+		#define N_OUTPUTS_ANA 	0 // Number of analog outputs (PWM)
+	#endif
     #ifdef STM32F13
       #define N_OUTPUTS_DIG   4 // Number of digital outputs
       #define N_OUTPUTS_ANA   0 // Number of analog outputs (PWM)
@@ -61,7 +63,6 @@
 		  #define N_OUTPUTS_DIG 	1 // Number of digital outputs
 		  #define N_OUTPUTS_ANA 	0 // Number of analog outputs (PWM)
     #endif
-	#endif
 #else //-- not STM32
   #define N_AXIS 3 // Number of axes
 	#define SOME_LARGE_VALUE 1.0E+38
